@@ -356,9 +356,9 @@ MonoBehaviour:
   player: {fileID: 1454883557}
   countDownTime: 360
   cameraInitOffsetY: 4.2
-  cameraInitOffsetZ: 20
+  cameraInitOffsetZ: 11
   cameraRotationSpeed: 5
-  cameraZoomSpeed: 0.1
+  cameraZoomSpeed: 0.01
   finalFOV: 2
   otherSkybox: {fileID: 2100000, guid: cc421da483ed06c49933077a621bff25, type: 2}
   otherPhysMaterial: {fileID: 13400000, guid: 2e62650afe0229d4dba0aaa01acb3f5e, type: 2}

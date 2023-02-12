@@ -123,6 +123,10 @@ public class CameraController : MonoBehaviour
             //audio
             if(!audioSources.isPlaying)
             {
+                if(audioIndex == otherclips.Length)
+                {
+                    audioIndex = otherclips.Length - 1; //replay the last clip
+                } 
                 audioSources.clip = otherclips[audioIndex];
                 audioSources.Play();
                 audioIndex += 1;
