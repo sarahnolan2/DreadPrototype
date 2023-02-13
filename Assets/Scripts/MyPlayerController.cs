@@ -57,7 +57,7 @@ public class MyPlayerController : MonoBehaviour
         if(paddleFLeft)
         {
             // make the player paddle forward left
-            Debug.Log("paddle forward left");
+            //Debug.Log("paddle forward left");
 
             //move forward and left
             //this.transform.Translate(new Vector3(-0.5f, 0, -0.5f), Space.Self);
@@ -75,7 +75,7 @@ public class MyPlayerController : MonoBehaviour
         if(paddleFRight)
         {
             // make the player paddle forward right
-            Debug.Log("paddle forward right");
+            //Debug.Log("paddle forward right");
 
             //move forward and right
 
@@ -92,7 +92,7 @@ public class MyPlayerController : MonoBehaviour
         if (paddleBLeft)
         {
             // make the player paddle backward left
-            Debug.Log("paddle backward left");
+            //Debug.Log("paddle backward left");
 
             //move backward and left
             this.GetComponent<Rigidbody>().AddForce(new Vector3(boatSpeed, 0, -boatSpeed));
@@ -108,7 +108,7 @@ public class MyPlayerController : MonoBehaviour
         if(paddleBRight)
         {
             // make the player paddle backward right
-            Debug.Log("paddle backward right");
+            //Debug.Log("paddle backward right");
 
             //move backwards and right
             this.GetComponent<Rigidbody>().AddForce(new Vector3(boatSpeed, 0, boatSpeed));
