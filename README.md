@@ -6,5 +6,5 @@
  
 - Music from Pixabay
 - [Boats Low Poly](https://assetstore.unity.com/packages/3d/vehicles/sea/boats-polypack-189866)
-- Reutilised a 3D model I made for another game.
+- Reutilised a 3D model I made for a previous game.
 
