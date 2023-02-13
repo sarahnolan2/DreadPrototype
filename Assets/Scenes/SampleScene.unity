@@ -358,14 +358,16 @@ MonoBehaviour:
   cameraInitOffsetY: 4.2
   cameraInitOffsetZ: 11
   cameraRotationSpeed: 5
-  cameraZoomSpeed: 0.01
+  cameraZoomSpeed: 0.03
   finalFOV: 2
   otherSkybox: {fileID: 2100000, guid: cc421da483ed06c49933077a621bff25, type: 2}
   otherPhysMaterial: {fileID: 13400000, guid: 2e62650afe0229d4dba0aaa01acb3f5e, type: 2}
   volume: {fileID: 832575518}
-  otherclips:
-  - {fileID: 0}
-  - {fileID: 0}
+  water: {fileID: 2100000, guid: 0582c19c1c9db7443800f10e8e1ad4d9, type: 2}
+  audioClips:
+  - {fileID: 8300000, guid: 721d5c7836f310c4ca07b58c8f3b8c05, type: 3}
+  - {fileID: 8300000, guid: 57bf3f8fbd9aece4d93349a8c25905b9, type: 3}
+  - {fileID: 8300000, guid: b851a0ef5139d37419e66f5ff5527591, type: 3}
 --- !u!82 &330585551
 AudioSource:
   m_ObjectHideFlags: 0
@@ -378,7 +380,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 57bf3f8fbd9aece4d93349a8c25905b9, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.602
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -1390,8 +1392,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1694836843}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -700, y: 56.4, z: 24.99074}
-  m_LocalScale: {x: 41.87, y: 175.37, z: 41.87}
+  m_LocalPosition: {x: -700, y: 67.4388, z: 24.99074}
+  m_LocalScale: {x: 41.87, y: 197.44908, z: 41.87}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}

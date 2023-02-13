@@ -23,6 +23,7 @@ public class CameraController : MonoBehaviour
     public Material otherSkybox;
     public PhysicMaterial otherPhysMaterial;
     public Volume volume;
+    public Material water;
 
     private Vector3 offset;
     private Camera cam;
@@ -31,16 +32,15 @@ public class CameraController : MonoBehaviour
     private bool isTimerRunning;
     private float startTime;
     private bool didWeChangeMood;
-    
+    private int speedModifier;
 
     private ChromaticAberration chrome;
     private LensDistortion lens;
     private FilmGrain film;
     
     private int flip = 0;
-    private AudioSource audioSources = new AudioSource();
-    public AudioClip[] otherclips = new AudioClip[2];
-    private int audioIndex;
+    private AudioSource audioSource = new AudioSource();
+    public AudioClip[] audioClips = new AudioClip[2];
 
     // Start is called before the first frame update
     void Start()
@@ -52,15 +52,18 @@ public class CameraController : MonoBehaviour
         didWeChangeMood = false;
         initialFOV = cam.fieldOfView;
         //isCameraRotationFree = true; //can use this to switch from free roaming camera to the single axis camera.
-        
+        speedModifier = 1;
+        water.color = new Color(0.0f / 255.0f, 79.0f/255.0f, 190.0f/255.0f); //reset it to blue
+
         //post p
         volume.profile.TryGet<ChromaticAberration>(out chrome);
         volume.profile.TryGet<FilmGrain>(out film);
 
         //audio 
           
-        audioSources = GetComponent<AudioSource>();
-        audioIndex = 0;
+        audioSource = GetComponent<AudioSource>();
+        audioSource.clip = audioClips[0];
+        StartCoroutine(playAudioSequentially());
     }
 
     // Update is called once per frame
@@ -71,32 +74,29 @@ public class CameraController : MonoBehaviour
             if (countDownTime > 0)
             {
                 //here we reduce the camera distance from the player until the timer runs out                
-                cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, finalFOV, cameraZoomSpeed * Time.deltaTime);
+                cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, finalFOV, cameraZoomSpeed * speedModifier * Time.deltaTime);
 
-                
+                //lerp the fog
+                RenderSettings.fogColor = Color.Lerp(RenderSettings.fogColor, new Color(41.0f / 255.0f, 17.0f / 255.0f, 16.0f / 255.0f), cameraZoomSpeed * speedModifier * Time.deltaTime);
+                RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, 0.05f, cameraZoomSpeed * speedModifier * Time.deltaTime);
 
                 //change the mood when the field of view is halfway completed its trajectory
-                if(cam.fieldOfView / initialFOV <= 0.5 && !didWeChangeMood)
+                if (cam.fieldOfView / initialFOV <= 0.5 && !didWeChangeMood)
                 {
+
                     ChangeSkybox();
 
                     SlowerPhysicsMaterial();
 
-                    didWeChangeMood = true;
-                }
-                else if (cam.fieldOfView / initialFOV <= 0.25)
-                {
+                    speedModifier = 2;
 
-                }
-                else if (cam.fieldOfView / initialFOV <= 0.10)
-                {
-                    
+                    didWeChangeMood = true;
                 }
                 else if (didWeChangeMood) //changed mood true and want to repeatedly call stuff
                 {
-                    //lerp the fog
-                    RenderSettings.fogColor = Color.Lerp(RenderSettings.fogColor, new Color(41f/255f,17f/255f,16f/255f), cameraZoomSpeed * 2 * Time.deltaTime);
-                    RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, 0.05f, cameraZoomSpeed * Time.deltaTime);
+                    water.color = Color.Lerp(water.color, Color.black, cameraZoomSpeed * speedModifier * Time.deltaTime);
+
+                    
 
                     //lerp post-p (doesn't seem to work at runtime)
                     //chrome.intensity.value = Mathf.Lerp(0, 1, cameraZoomSpeed * Time.deltaTime);
@@ -118,22 +118,36 @@ public class CameraController : MonoBehaviour
             transform.position = player.position + offset; 
             transform.LookAt(player.position + new Vector3(0, 0.9f,0)); //we add y height for the face distance offset
 
+        }
+    }
 
+    IEnumerator playAudioSequentially()
+    {
+        //audio
+        yield return null;
 
-            //audio
-            if(!audioSources.isPlaying)
+        //1.Loop through each AudioClip
+        for (int i = 0; i < audioClips.Length; i++)
+        {
+            //2.Assign current AudioClip to audiosource
+            audioSource.clip = audioClips[i];
+
+            //3.Play Audio
+            audioSource.Play();
+
+            //4.Wait for it to finish playing
+            while (audioSource.isPlaying)
             {
-                if(audioIndex == otherclips.Length)
-                {
-                    audioIndex = otherclips.Length - 1; //replay the last clip
-                } 
-                audioSources.clip = otherclips[audioIndex];
-                audioSources.Play();
-                audioIndex += 1;
+                yield return null;
             }
 
-            // audio help: https://docs.unity3d.com/ScriptReference/AudioSource.PlayScheduled.html
+            //5. Go back to #2 and play the next audio in the audiodClips array
         }
+    }
+
+    private void OnAnimatorIK(int layerIndex)
+    {
+        
     }
 
     private void FixedUpdate()
