@@ -213,6 +213,10 @@ public class CameraController : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, 0.09f, 1.0f);
 
+        yield return new WaitForSeconds(2);
+
+
+        QuitGame();
     }
 
     //todo: 
@@ -250,5 +254,17 @@ public class CameraController : MonoBehaviour
         Debug.Log("length of music: " + countDownTime);
         isTimerRunning = true;
         startTime = countDownTime;
+    }
+
+    public void QuitGame()
+    {
+        // save any game data here
+        #if UNITY_EDITOR
+        // Application.Quit() does not work in the editor so
+        // UnityEditor.EditorApplication.isPlaying need to be set to false to end the game
+        UnityEditor.EditorApplication.isPlaying = false;
+        #else
+        Application.Quit();
+        #endif
     }
 }
