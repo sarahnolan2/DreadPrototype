@@ -11,5 +11,3 @@
 
 
 
-Mac Build downloadable [here](https://www.transfernow.net/dl/dreadprototype)
-
