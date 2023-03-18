@@ -8,6 +8,7 @@ public class CameraController : MonoBehaviour
 {
     
     public Transform player;
+    private float playerLife; // determined by the camera FOV
 
     private float countDownTime;
 
@@ -83,6 +84,8 @@ public class CameraController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        playerLife = cam.fieldOfView;
+
         if (isTimerRunning) //makes sure we dont run "timer ran out" case infinitely and only once
         {
 
@@ -150,6 +153,21 @@ public class CameraController : MonoBehaviour
 
         }
         
+    }
+
+    void StartDarkness()
+    {
+        //would essentially begin the isTimerRunning process
+        //start this once player's -x position is smaller than [insert amount]
+        //todo make sure the music gets crossfaded rather than played one at a time
+    }
+
+    public void getLightLife(float amount)
+    {
+        //add life to the player
+        //gets called when player triggers buoy
+        //expand field of view until we reach currentFOV + amount
+        //and keep decreasing FOV when done
     }
 
     IEnumerator playAudioSequentially()
@@ -221,11 +239,13 @@ public class CameraController : MonoBehaviour
 
     //todo: 
     // sun rotation to lower - but also in front of player's face?
-    //adjust camera zoom speed
+    // adjust camera zoom speed
     // check volume sounds ?
 
     void resetVariables()
     {
+        playerLife = cam.fieldOfView;
+
         // reset water material
         water.color = new Color(0.0f / 255.0f, 79.0f / 255.0f, 190.0f / 255.0f); //reset it to blue
         water.SetFloat("_Smoothness", 1.0f); //reset smoothness
