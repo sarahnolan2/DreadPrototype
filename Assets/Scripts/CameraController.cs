@@ -20,16 +20,21 @@ public class CameraController : MonoBehaviour
     public float cameraZoomSpeed; //0.01 is a good speed?
     public float finalFOV; //final distance from player
 
+    private Material ogSkybox;
     public Material otherSkybox;
+    private PhysicMaterial ogPhysicMaterial;
     public PhysicMaterial otherPhysMaterial;
     public Material water;
 
     private Vector3 offset;
     private Camera cam;
     private float initialFOV;
+    private bool hasDarknessStarted;
+    public float amountFOV = 40f;
+    private float resultFOV;
 
     private bool isTimerRunning;
-    private float startTime;
+    //private float startTime;
     private bool didWeChangeMood;
     private float speedModifier;
 
@@ -41,23 +46,48 @@ public class CameraController : MonoBehaviour
     private Tonemapping tone;
     
     private int flip = 0;
-    private AudioSource audioSource = new AudioSource();
-    public AudioClip[] audioClips = new AudioClip[2];
+    //private AudioSource audioSource = new AudioSource();
+    public CrossfadeMusic crossfade;
+    public AudioClip[] audioClips = new AudioClip[3];
+    
 
-    private float endTimerStart;
+    //private float endTimerStart;
 
+    void resetVariables()
+    {
+
+        playerLife = cam.fieldOfView;
+
+        // reset water material
+        water.color = new Color(0.0f / 255.0f, 79.0f / 255.0f, 190.0f / 255.0f); //reset it to blue
+        water.SetFloat("_Smoothness", 1.0f); //reset smoothness
+
+        //reset post p
+        split.active = false;
+        chrome.intensity.Override(0.0f);
+        film.intensity.Override(0.0f);
+        lens.intensity.Override(0.0f);
+        adj.contrast.Override(0.0f);
+        adj.saturation.Override(0.0f);
+        tone.mode.Override(TonemappingMode.Neutral);
+    }
     // Start is called before the first frame update
     void Start()
     {
+        crossfade.newSoundtrack(audioClips[0]);
         // camera position
         cam = GetComponent<Camera>();
         offset = new Vector3(player.position.x + cam.transform.position.x, player.position.y + cam.transform.position.y, player.position.z + cam.transform.position.z); //(player.position.x, player.position.y + 8.0f, player.position.z + 7.0f);
-        //offset = new Vector3(player.position.x, player.position.y + cameraInitOffsetY, player.position.z + cameraInitOffsetZ); //(player.position.x, player.position.y + 8.0f, player.position.z + 7.0f);
-        
+                                                                                                                                                                      //offset = new Vector3(player.position.x, player.position.y + cameraInitOffsetY, player.position.z + cameraInitOffsetZ); //(player.position.x, player.position.y + 8.0f, player.position.z + 7.0f);
+
+        ogSkybox = RenderSettings.skybox;
+        ogPhysicMaterial = GameObject.Find("SeaFloor").GetComponent<Collider>().material;
         didWeChangeMood = false;
         initialFOV = cam.fieldOfView;
+        playerLife = cam.fieldOfView;
+        hasDarknessStarted = false;
         //isCameraRotationFree = true; //can use this to switch from free roaming camera to the single axis camera.
-        speedModifier = 2.5f; //faster
+        speedModifier = 4.5f; //faster
               
         // post p  
         UnityEngine.Rendering.VolumeProfile volumeProfile = GameObject.Find("Global Volume").GetComponent<UnityEngine.Rendering.Volume>()?.profile;
@@ -76,22 +106,39 @@ public class CameraController : MonoBehaviour
         volumeProfile.TryGet<Tonemapping>(out tone);
         if (!volumeProfile.TryGet<Tonemapping>(out tone)) throw new System.NullReferenceException(nameof(tone));
 
-        setupAudio();
+        //setupAudio();
 
         resetVariables();
     }
 
+    void StartDarkness()
+    {
+        //would essentially begin the isTimerRunning process
+        isTimerRunning = true;
+
+        //todo make sure the music gets crossfaded rather than played one at a time
+        crossfade.newSoundtrack(audioClips[1]);
+    }
+
     // Update is called once per frame
-    void Update()
+    void LateUpdate()
     {
         playerLife = cam.fieldOfView;
+
+        //start darkness once player's -x position is smaller than [insert amount]
+        if (player.position.x < -68f && !hasDarknessStarted)
+        {            
+            StartDarkness();
+            hasDarknessStarted = true;
+        }
+
 
         if (isTimerRunning) //makes sure we dont run "timer ran out" case infinitely and only once
         {
 
-            if (countDownTime > 0)
+            if (cam.fieldOfView > finalFOV) //if the field of view is bigger than this, darkness grows
             {
-                //here we reduce the camera distance from the player until the timer runs out                
+                //here we reduce the camera distance from the player              
                 cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, finalFOV, cameraZoomSpeed * speedModifier * Time.deltaTime);
 
 
@@ -99,11 +146,13 @@ public class CameraController : MonoBehaviour
                 //only runs once
                 if (cam.fieldOfView / initialFOV <= 0.5 && !didWeChangeMood)
                 {
+                    crossfade.newSoundtrack(audioClips[2]);
+
                     ChangeSkybox();
 
-                    SlowerPhysicsMaterial();
+                    //SlowerPhysicsMaterial();
 
-                    speedModifier = 2.0f; //slower
+                    //speedModifier = 2.0f; //slower
 
 
                     split.active = true; //show split toning
@@ -119,57 +168,166 @@ public class CameraController : MonoBehaviour
                 {
                     water.color = Color.Lerp(water.color, Color.black, cameraZoomSpeed * 2 * Time.deltaTime);
 
-                    //lerp the fog
-                    if (cam.fieldOfView / initialFOV > 0.25)
-                    {
-                        RenderSettings.fogColor = Color.Lerp(RenderSettings.fogColor, new Color(41.0f / 255.0f, 17.0f / 255.0f, 16.0f / 255.0f), cameraZoomSpeed * 0.5f * Time.deltaTime); //new Color(41.0f / 255.0f, 17.0f / 255.0f, 16.0f / 255.0f)
-                    }
-                    else
-                    {
-                        RenderSettings.fogColor = Color.Lerp(RenderSettings.fogColor, Color.black, cameraZoomSpeed * 1.0f * Time.deltaTime);
-                    }
                     
-                    RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, 0.05f, cameraZoomSpeed * 0.5f  * Time.deltaTime);
-
                     //lerp post-p 
                     LerpPostProcessing();
                 }
+
+                //lerp the fog
+                if (cam.fieldOfView / initialFOV > 0.25)
+                {
+                    RenderSettings.fogColor = Color.Lerp(RenderSettings.fogColor, new Color(41.0f / 255.0f, 17.0f / 255.0f, 16.0f / 255.0f), cameraZoomSpeed * 2f * Time.deltaTime); //new Color(41.0f / 255.0f, 17.0f / 255.0f, 16.0f / 255.0f)
+                }
+                else
+                {
+                    RenderSettings.fogColor = Color.Lerp(RenderSettings.fogColor, Color.black, cameraZoomSpeed * 0.5f * Time.deltaTime);
+                }
+
+                RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, 0.05f, cameraZoomSpeed * 0.5f * Time.deltaTime);
+
                 //Debug.Log(cam.fieldOfView);
 
-                countDownTime -= Time.deltaTime;
+            }
+            else //darkness has consumed the player
+            {
+                Debug.Log("Darkness consumed!");
+                StartCoroutine(processDarkEnding());
+                //isTimerRunning = true;
+            }
+
+        }
+
+
+        if(!isTimerRunning && hasDarknessStarted) //Lerps back all the things that were lerped when we get light
+        {
+            //move camera back and increase life bar
+            //also lerp the effects back
+                        
+            //keep lerping while the field of view is still smaller than the result
+            if (cam.fieldOfView < resultFOV - 8f)
+            {
+                cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, resultFOV, cameraZoomSpeed * speedModifier * 5 * Time.deltaTime);
+                playerLife = cam.fieldOfView;
+                //Debug.Log("lerp cam: " + cam.fieldOfView + " result: " + resultFOV);
+
+
+                water.color = Color.Lerp(water.color, new Color(0.0f / 255.0f, 79.0f / 255.0f, 190.0f / 255.0f), cameraZoomSpeed * speedModifier * 2 * Time.deltaTime); //reset it to blue
+
+                //lerp the fog
+
+                RenderSettings.fogColor = Color.Lerp(RenderSettings.fogColor, new Color(248.0f / 255.0f, 187.0f / 255.0f, 142.0f / 255.0f), cameraZoomSpeed *  speedModifier * 2f * Time.deltaTime);
+
+                RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, 0.001f, cameraZoomSpeed * speedModifier * 2 * Time.deltaTime);
+
+                //lerp post-p 
+                LerpPostProcessingBackwards();
             }
             else
             {
-                Debug.Log("Time has run out!");
-                countDownTime = 0;
-                StartCoroutine(processEnding());
-                isTimerRunning = false;
-            }
-
-            //allows for camera rotation with mouse on X axis
-            offset = Quaternion.AngleAxis(Input.GetAxis("Mouse X") * cameraRotationSpeed, Vector3.up) * offset;
-            transform.position = player.position + offset; 
-            transform.LookAt(player.position + new Vector3(0, 0.9f,0)); //we add y height for the face distance offset
-
+                //now that the life is back, darkness returns
+                StartCoroutine(darknessBack());
+            }                   
         }
+
+
+        //allows for camera rotation with mouse on X axis
+        offset = Quaternion.AngleAxis(Input.GetAxis("Mouse X") * cameraRotationSpeed, Vector3.up) * offset;
+        transform.position = player.position + offset;
+        transform.LookAt(player.position + new Vector3(0, 0.9f, 0)); //we add y height for the face distance offset
+
+    }
+
+    IEnumerator darknessBack()
+    {
+        yield return new WaitForSeconds(1.5f);
+        Debug.Log("darkness returns");
+        isTimerRunning = true;
+    }
+    
+    //gets called when player triggers buoy
+    public void getLightLife()
+    {
+        if (!hasDarknessStarted)
+            return;
+
+        //Debug.Log("get light");
+        resultFOV = amountFOV + cam.fieldOfView;
+        isTimerRunning = false;
         
-    }
-
-    void StartDarkness()
-    {
-        //would essentially begin the isTimerRunning process
-        //start this once player's -x position is smaller than [insert amount]
-        //todo make sure the music gets crossfaded rather than played one at a time
-    }
-
-    public void getLightLife(float amount)
-    {
         //add life to the player
-        //gets called when player triggers buoy
         //expand field of view until we reach currentFOV + amount
-        //and keep decreasing FOV when done
-    }
+        
 
+        //Lerp back all the things that were lerped
+        //StartCoroutine(LerpLife(resultFOV));
+
+        //Change back all the things if we went past the mid-point
+
+        if(resultFOV / initialFOV >= 0.5)
+        {
+            //ChangeSkybox
+            RenderSettings.skybox = ogSkybox;
+
+            //OgPhysicsMaterial
+            //Collider physmaterialCollider = GameObject.Find("SeaFloor").GetComponent<Collider>();
+            //physmaterialCollider.material = ogPhysicMaterial;
+
+            //speedModifier = 5.0f; //faster
+
+            split.active = false; //hide split toning
+            tone.mode.Override(TonemappingMode.Neutral);
+
+            didWeChangeMood = false;
+            crossfade.newSoundtrack(audioClips[1]);
+        }
+        else
+        {
+            crossfade.newSoundtrack(audioClips[1]);
+        }
+
+
+        //now that the life is back, darkness returns
+        
+
+        //and keep decreasing FOV when done (isTimerTunning = true) 
+
+    }
+    /*
+    IEnumerator LerpLife(float resultFOV)
+    {
+        //move camera back and increase life bar
+        //also lerp the effects back
+
+        cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, resultFOV, cameraZoomSpeed * Time.deltaTime);
+        playerLife = cam.fieldOfView;
+        //Debug.Log("lerp cam: "+cam.fieldOfView + "result: "+resultFOV);
+
+
+        water.color = Color.Lerp(water.color, new Color(0.0f / 255.0f, 79.0f / 255.0f, 190.0f / 255.0f), cameraZoomSpeed * 2 * Time.deltaTime); //reset it to blue
+
+        //lerp the fog
+        
+        RenderSettings.fogColor = Color.Lerp(RenderSettings.fogColor, new Color(248.0f / 255.0f, 187.0f / 255.0f, 142.0f / 255.0f), cameraZoomSpeed * 0.5f * Time.deltaTime); 
+        
+        RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, 0.001f, cameraZoomSpeed * 0.5f * Time.deltaTime);
+
+        //lerp post-p 
+        LerpPostProcessingBackwards();
+
+        
+        //keep calling the coroutine while the field of view is still smaller than the result
+        while (cam.fieldOfView < resultFOV)
+        {
+            yield return null;
+        }
+
+        //now that the life is back, darkness returns
+        isTimerRunning = true;
+        Debug.Log("darkness returns");
+        yield break;        
+    }*/
+
+    /*
     IEnumerator playAudioSequentially()
     {
         //audio
@@ -193,7 +351,7 @@ public class CameraController : MonoBehaviour
             //5. Go back to #2 and play the next audio in the audiodClips array
         }
     }
-
+    */
     
     void ChangeSkybox()
     {
@@ -205,7 +363,7 @@ public class CameraController : MonoBehaviour
     {
         Collider physmaterialCollider = GameObject.Find("SeaFloor").GetComponent<Collider>();
         physmaterialCollider.material = otherPhysMaterial;
-        Debug.Log("phys");
+        //Debug.Log("phys");
     }
 
     void LerpPostProcessing()
@@ -218,11 +376,21 @@ public class CameraController : MonoBehaviour
         adj.saturation.value = Mathf.Lerp(adj.saturation.value, 100.0f, cameraZoomSpeed * Time.deltaTime);
     }
 
-    IEnumerator processEnding()
+    void LerpPostProcessingBackwards()
+    {
+        //Debug.Log("post p back");
+        chrome.intensity.value = Mathf.Lerp(chrome.intensity.value, 0.0f, cameraZoomSpeed * Time.deltaTime);
+        film.intensity.value = Mathf.Lerp(film.intensity.value, 0.0f, cameraZoomSpeed * 0.5f * Time.deltaTime);
+        lens.intensity.value = Mathf.Lerp(lens.intensity.value, 0.0f, cameraZoomSpeed * Time.deltaTime);
+        adj.contrast.value = Mathf.Lerp(adj.contrast.value, 0.0f, cameraZoomSpeed * Time.deltaTime);
+        adj.saturation.value = Mathf.Lerp(adj.saturation.value, 0.0f, cameraZoomSpeed * Time.deltaTime);
+    }
+
+    public IEnumerator processDarkEnding()
     {
         yield return new WaitForSeconds(1);
 
-        Debug.Log("1 sec passed");
+        //Debug.Log("1 sec passed");
         water.SetFloat("_Smoothness", Mathf.Lerp(water.GetFloat("_Smoothness"), 0.0f, 1.0f));
         film.intensity.value = 1.0f;
 
@@ -237,45 +405,36 @@ public class CameraController : MonoBehaviour
         QuitGame();
     }
 
+    IEnumerator processLightEnding()
+    {
+        yield return new WaitForSeconds(1);
+
+
+    }
+
     //todo: 
     // sun rotation to lower - but also in front of player's face?
     // adjust camera zoom speed
     // check volume sounds ?
 
-    void resetVariables()
-    {
-        playerLife = cam.fieldOfView;
-
-        // reset water material
-        water.color = new Color(0.0f / 255.0f, 79.0f / 255.0f, 190.0f / 255.0f); //reset it to blue
-        water.SetFloat("_Smoothness", 1.0f); //reset smoothness
-
-        //reset post p
-        split.active = false;
-        chrome.intensity.Override(0.0f);
-        film.intensity.Override(0.0f);
-        lens.intensity.Override(0.0f);
-        adj.contrast.Override(0.0f);
-        adj.saturation.Override(0.0f);
-        tone.mode.Override(TonemappingMode.Neutral);
-    }
-
+    
+    /*
     void setupAudio()
     {
         audioSource = GetComponent<AudioSource>();
         audioSource.clip = audioClips[0];
-        StartCoroutine(playAudioSequentially());
-
+        //StartCoroutine(playAudioSequentially());
+        
         countDownTime = 0;
         foreach (AudioClip clip in audioClips)
         {
             countDownTime += clip.length;
         }
         Debug.Log("length of music: " + countDownTime);
-        isTimerRunning = true;
+        //isTimerRunning = true;
         startTime = countDownTime;
     }
-
+    */
     public void QuitGame()
     {
         // save any game data here
