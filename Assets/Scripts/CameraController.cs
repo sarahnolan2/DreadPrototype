@@ -44,8 +44,8 @@ public class CameraController : MonoBehaviour
     private ColorAdjustments adj;
     private SplitToning split;
     private Tonemapping tone;
+    private Vignette vignette;
     
-    private int flip = 0;
     //private AudioSource audioSource = new AudioSource();
     public CrossfadeMusic crossfade;
     public AudioClip[] audioClips = new AudioClip[3];
@@ -70,6 +70,7 @@ public class CameraController : MonoBehaviour
         adj.contrast.Override(0.0f);
         adj.saturation.Override(0.0f);
         tone.mode.Override(TonemappingMode.Neutral);
+        vignette.intensity.Override(0.0f);
     }
     // Start is called before the first frame update
     void Start()
@@ -105,6 +106,8 @@ public class CameraController : MonoBehaviour
         if (!volumeProfile.TryGet<ColorAdjustments>(out adj)) throw new System.NullReferenceException(nameof(adj));
         volumeProfile.TryGet<Tonemapping>(out tone);
         if (!volumeProfile.TryGet<Tonemapping>(out tone)) throw new System.NullReferenceException(nameof(tone));
+        volumeProfile.TryGet<Vignette>(out vignette);
+        if (!volumeProfile.TryGet<Vignette>(out vignette)) throw new System.NullReferenceException(nameof(Vignette));
 
         //setupAudio();
 
@@ -136,7 +139,7 @@ public class CameraController : MonoBehaviour
         if (isTimerRunning) //makes sure we dont run "timer ran out" case infinitely and only once
         {
 
-            if (cam.fieldOfView > finalFOV) //if the field of view is bigger than this, darkness grows
+            if (cam.fieldOfView > (finalFOV-5)) //if the field of view is bigger than this, darkness grows
             {
                 //here we reduce the camera distance from the player              
                 cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, finalFOV, cameraZoomSpeed * speedModifier * Time.deltaTime);
@@ -245,8 +248,11 @@ public class CameraController : MonoBehaviour
     }
     
     //gets called when player triggers buoy
-    public void getLightLife()
+    public void getLightLife(GameObject callingBuoy)
     {
+        //kill the light
+        GameObject.Destroy(callingBuoy);
+
         if (!hasDarknessStarted)
             return;
 
@@ -374,6 +380,7 @@ public class CameraController : MonoBehaviour
         lens.intensity.value = Mathf.Lerp(lens.intensity.value, 0.5f, cameraZoomSpeed * Time.deltaTime);
         adj.contrast.value = Mathf.Lerp(adj.contrast.value, 100.0f, cameraZoomSpeed * Time.deltaTime);
         adj.saturation.value = Mathf.Lerp(adj.saturation.value, 100.0f, cameraZoomSpeed * Time.deltaTime);
+        vignette.intensity.value = Mathf.Lerp(vignette.intensity.value, 0.6f, cameraZoomSpeed * Time.deltaTime); 
     }
 
     void LerpPostProcessingBackwards()
@@ -384,6 +391,7 @@ public class CameraController : MonoBehaviour
         lens.intensity.value = Mathf.Lerp(lens.intensity.value, 0.0f, cameraZoomSpeed * Time.deltaTime);
         adj.contrast.value = Mathf.Lerp(adj.contrast.value, 0.0f, cameraZoomSpeed * Time.deltaTime);
         adj.saturation.value = Mathf.Lerp(adj.saturation.value, 0.0f, cameraZoomSpeed * Time.deltaTime);
+        vignette.intensity.value = Mathf.Lerp(vignette.intensity.value, 0.0f, cameraZoomSpeed * Time.deltaTime);
     }
 
     public IEnumerator processDarkEnding()
@@ -398,6 +406,7 @@ public class CameraController : MonoBehaviour
         RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, 0.09f, 0.5f);
         yield return new WaitForSeconds(0.5f);
         RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, 0.09f, 1.0f);
+        vignette.intensity.value = Mathf.Lerp(vignette.intensity.value, 0.6f, cameraZoomSpeed * Time.deltaTime);
 
         yield return new WaitForSeconds(2);
 

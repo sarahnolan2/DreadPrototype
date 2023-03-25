@@ -19,23 +19,13 @@ public class BuoyTrigger : MonoBehaviour
         lightIntensity = lightObj.GetComponent<Light>().intensity;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        if(isTriggered == true)
-        {
-            //reduce light to zero
-
-            lightIntensity = Mathf.Lerp(lightIntensity, 0f, 2 * Time.deltaTime);
-        }
-    }
 
     private void OnTriggerEnter(Collider other)
     {
         if(other.gameObject.CompareTag("Player"))
         {
             isTriggered = true;
-            gameController.getLightLife();
+            gameController.getLightLife(this.gameObject);
 
         }
     }

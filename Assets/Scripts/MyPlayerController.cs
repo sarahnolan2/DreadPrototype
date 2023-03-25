@@ -10,6 +10,7 @@ public class MyPlayerController : MonoBehaviour
 
     public float boatRotation = 9.0f;
     public float boatSpeed = 150.0f;
+    public float topSpeed = 50.0f;
 
     public GameObject particles;
 
@@ -17,6 +18,9 @@ public class MyPlayerController : MonoBehaviour
     private bool paddleFRight;
     private bool paddleBLeft;
     private bool paddleBRight;
+
+    [SerializeField]
+    private Rigidbody rb;
 
     // Start is called before the first frame update
     void Start()
@@ -62,9 +66,13 @@ public class MyPlayerController : MonoBehaviour
             //move forward and left
             //this.transform.Translate(new Vector3(-0.5f, 0, -0.5f), Space.Self);
 
-            this.GetComponent<Rigidbody>().AddForce(new Vector3(-boatSpeed, 0, -boatSpeed));
+            
+            rb.AddRelativeForce(new Vector3(-boatSpeed, 0, -boatSpeed));
 
             this.GetComponent<Transform>().Rotate(0, -boatRotation, 0);
+
+            if (rb.velocity.magnitude > topSpeed)
+                rb.velocity = rb.velocity.normalized * topSpeed;
 
             //particle sploosh
             //GameObject.Instantiate(particles, (this.transform.position + new Vector3(-10.0f,1.0f,-10.0f)), Quaternion.identity);
@@ -79,9 +87,12 @@ public class MyPlayerController : MonoBehaviour
 
             //move forward and right
 
-            this.GetComponent<Rigidbody>().AddForce(new Vector3(-boatSpeed, 0, boatSpeed));
+            this.GetComponent<Rigidbody>().AddRelativeForce(new Vector3(-boatSpeed, 0, boatSpeed));
 
             this.GetComponent<Transform>().Rotate(0, boatRotation, 0);
+
+            if (rb.velocity.magnitude > topSpeed)
+                rb.velocity = rb.velocity.normalized * topSpeed;
 
             //particle sploosh
             //GameObject.Instantiate(particles, (this.transform.position + new Vector3(-10.0f, 1.0f, 10.0f)), Quaternion.identity);
@@ -95,9 +106,12 @@ public class MyPlayerController : MonoBehaviour
             //Debug.Log("paddle backward left");
 
             //move backward and left
-            this.GetComponent<Rigidbody>().AddForce(new Vector3(boatSpeed, 0, -boatSpeed));
+            this.GetComponent<Rigidbody>().AddRelativeForce(new Vector3(boatSpeed, 0, -boatSpeed));
 
             this.GetComponent<Transform>().Rotate(0, boatRotation, 0);
+
+            if (rb.velocity.magnitude > topSpeed)
+                rb.velocity = rb.velocity.normalized * topSpeed;
 
             //particle sploosh
             //GameObject.Instantiate(particles, (this.transform.position + new Vector3(10.0f, 1.0f, -10.0f)), Quaternion.identity);
@@ -111,9 +125,12 @@ public class MyPlayerController : MonoBehaviour
             //Debug.Log("paddle backward right");
 
             //move backwards and right
-            this.GetComponent<Rigidbody>().AddForce(new Vector3(boatSpeed, 0, boatSpeed));
+            this.GetComponent<Rigidbody>().AddRelativeForce(new Vector3(boatSpeed, 0, boatSpeed));
 
             this.GetComponent<Transform>().Rotate(0, -boatRotation, 0);
+
+            if (rb.velocity.magnitude > topSpeed)
+                rb.velocity = rb.velocity.normalized * topSpeed;
 
             //particle sploosh
             //GameObject.Instantiate(particles, (this.transform.position + new Vector3(10.0f, 1.0f, 10.0f)), Quaternion.identity);
