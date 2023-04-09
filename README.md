@@ -12,5 +12,6 @@
 - Lighthouse from TurboSquid
 - Buoys from TurboSquid
 - [Crates](https://assetstore.unity.com/packages/3d/props/industrial/ben3d-crate-7548)
+- [Crank sound effects](https://assetstore.unity.com/packages/audio/sound-fx/the-accountant-134417) 
 
 
