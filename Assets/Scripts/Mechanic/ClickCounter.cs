@@ -39,7 +39,7 @@ public class ClickCounter : MonoBehaviour
             clicks = 0;
 
             // Print the click rate to the console for debugging
-            Debug.Log("Click rate: " + clickRate + " clicks per second");
+            //Debug.Log("Click rate: " + clickRate + " clicks per second");
         }
     }
 

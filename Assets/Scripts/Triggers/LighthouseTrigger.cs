@@ -8,9 +8,9 @@ public class LighthouseTrigger : MonoBehaviour
     CameraController gameController;
 
     [SerializeField] AudioSource ConsumedEndingSrc;
-    private void OnTriggerEnter(Collider collision)
+    private void OnColliderEnter(Collider collision)
     {
-        StartCoroutine(gameController.processDarkEnding());
+        StartCoroutine(gameController.processConsumedEnding());
         ConsumedEndingSrc.Play();
     }
 }

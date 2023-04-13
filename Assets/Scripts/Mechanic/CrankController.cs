@@ -74,7 +74,7 @@ public class CrankController : MonoBehaviour
                 camManager.CrankLife(crankAmount);
                 crankingAudioSrc.Play();
 
-                Debug.Log("crankAmount: " + crankAmount);
+                //Debug.Log("crankAmount: " + crankAmount);
 
                 //maxFOV that someone can earn from cranking before it breaks: x amount
             }

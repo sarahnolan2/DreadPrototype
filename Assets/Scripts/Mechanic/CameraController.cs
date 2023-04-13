@@ -53,7 +53,9 @@ public class CameraController : MonoBehaviour
     //private AudioSource audioSource = new AudioSource();
     public CrossfadeMusic crossfade;
     public AudioClip[] audioClips = new AudioClip[3];
-    
+
+
+    [SerializeField] private GameObject MimicPrefab;
 
     //private float endTimerStart;
 
@@ -74,7 +76,7 @@ public class CameraController : MonoBehaviour
         adj.contrast.Override(0.0f);
         adj.saturation.Override(0.0f);
         tone.mode.Override(TonemappingMode.Neutral);
-        vignette.intensity.Override(0.0f);
+        //vignette.intensity.Override(0.0f);
     }
     // Start is called before the first frame update
     void Start()
@@ -94,7 +96,7 @@ public class CameraController : MonoBehaviour
         playerLife = cam.fieldOfView;
         hasDarknessStarted = false;
         //isCameraRotationFree = true; //can use this to switch from free roaming camera to the single axis camera.
-        speedModifier = 4.5f; //faster
+        speedModifier = 2f; 
               
         // post p  
         UnityEngine.Rendering.VolumeProfile volumeProfile = GameObject.Find("Global Volume").GetComponent<UnityEngine.Rendering.Volume>()?.profile;
@@ -112,8 +114,8 @@ public class CameraController : MonoBehaviour
         if (!volumeProfile.TryGet<ColorAdjustments>(out adj)) throw new System.NullReferenceException(nameof(adj));
         volumeProfile.TryGet<Tonemapping>(out tone);
         if (!volumeProfile.TryGet<Tonemapping>(out tone)) throw new System.NullReferenceException(nameof(tone));
-        volumeProfile.TryGet<Vignette>(out vignette);
-        if (!volumeProfile.TryGet<Vignette>(out vignette)) throw new System.NullReferenceException(nameof(Vignette));
+        //volumeProfile.TryGet<Vignette>(out vignette);
+        //if (!volumeProfile.TryGet<Vignette>(out vignette)) throw new System.NullReferenceException(nameof(Vignette));
 
         //setupAudio();
 
@@ -146,7 +148,7 @@ public class CameraController : MonoBehaviour
         if (isTimerRunning) //makes sure we dont run "timer ran out" case infinitely and only once
         {
 
-            if (cam.fieldOfView > (finalFOV-15)) //if the field of view is bigger than this, darkness grows
+            if (cam.fieldOfView > (finalFOV+5)) //if the field of view is bigger than this, darkness grows
             {
                 //here we reduce the camera distance from the player              
                 cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, finalFOV, cameraZoomSpeed * speedModifier * Time.deltaTime);
@@ -169,7 +171,10 @@ public class CameraController : MonoBehaviour
                     tone.mode.Override(TonemappingMode.ACES);                    
 
                     didWeChangeMood = true;
-                    
+
+                    SpawnSpiders(20);
+
+
                 }/*
                 else if (cam.fieldOfView / initialFOV <= 0.3 && didWeChangeMood) {
                     water.SetFloat("_Smoothness", 0.0f);
@@ -216,6 +221,8 @@ public class CameraController : MonoBehaviour
             //keep lerping while the field of view is still smaller than the result
             if (cam.fieldOfView < (resultFOV - 8f)) //8f is for lerp adjustment
             {
+                DespawnSpiders();
+
                 cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, resultFOV, cameraZoomSpeed * speedModifier * 5 * Time.deltaTime);
                 playerLife = cam.fieldOfView;
                 //Debug.Log("lerp cam: " + cam.fieldOfView + " result: " + resultFOV);
@@ -349,66 +356,52 @@ public class CameraController : MonoBehaviour
         }
     }
 
-    /*
-    IEnumerator LerpLife(float resultFOV)
+
+    private void SpawnSpiders(int amount)
     {
-        //move camera back and increase life bar
-        //also lerp the effects back
-
-        cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, resultFOV, cameraZoomSpeed * Time.deltaTime);
-        playerLife = cam.fieldOfView;
-        //Debug.Log("lerp cam: "+cam.fieldOfView + "result: "+resultFOV);
-
-
-        water.color = Color.Lerp(water.color, new Color(0.0f / 255.0f, 79.0f / 255.0f, 190.0f / 255.0f), cameraZoomSpeed * 2 * Time.deltaTime); //reset it to blue
-
-        //lerp the fog
+        GameObject mimicsParent = GameObject.Find("Mimics");
+        float minDistance = 60f;
+        float maxDistance = 80f;
         
-        RenderSettings.fogColor = Color.Lerp(RenderSettings.fogColor, new Color(248.0f / 255.0f, 187.0f / 255.0f, 142.0f / 255.0f), cameraZoomSpeed * 0.5f * Time.deltaTime); 
-        
-        RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, 0.001f, cameraZoomSpeed * 0.5f * Time.deltaTime);
 
-        //lerp post-p 
-        LerpPostProcessingBackwards();
-
-        
-        //keep calling the coroutine while the field of view is still smaller than the result
-        while (cam.fieldOfView < resultFOV)
+        for (int i = 0; i < amount; i++)
         {
-            yield return null;
-        }
-
-        //now that the life is back, darkness returns
-        isTimerRunning = true;
-        Debug.Log("darkness returns");
-        yield break;        
-    }*/
-
-    /*
-    IEnumerator playAudioSequentially()
-    {
-        //audio
-        yield return null;
-
-        //1.Loop through each AudioClip
-        for (int i = 0; i < audioClips.Length; i++)
-        {
-            //2.Assign current AudioClip to audiosource
-            audioSource.clip = audioClips[i];
-
-            //3.Play Audio
-            audioSource.Play();
-
-            //4.Wait for it to finish playing
-            while (audioSource.isPlaying)
-            {
-                yield return null;
-            }
-
-            //5. Go back to #2 and play the next audio in the audiodClips array
+            float randomRange = Random.Range(minDistance, maxDistance);
+            Vector3 spawnPosition = new Vector3(this.transform.position.x + randomRange, this.transform.position.y + 6f, this.transform.position.z + randomRange);
+            GameObject.Instantiate(MimicPrefab, spawnPosition, Quaternion.identity, mimicsParent.transform);
         }
     }
-    */
+
+    private void SpawnSpidersCircle(int numberOfSpiders, float radius)
+    {
+        float angle = 2 * Mathf.PI / numberOfSpiders;
+        float spawnRadius = radius;
+
+        for (int i = 0; i < numberOfSpiders; i++)
+        {
+            // Get the x and y coordinates of a point on the circle with a given angle and radius
+            float x = Mathf.Cos(angle * i) * spawnRadius;
+            float y = Mathf.Sin(angle * i) * spawnRadius;
+
+            // Add these coordinates to the player position to get the spawn position
+            Vector3 spawnPos = player.position + new Vector3(x, y, 0);
+
+            // Instantiate the enemy prefab at the spawn position
+            GameObject enemy = Instantiate(MimicPrefab, spawnPos, Quaternion.identity);
+
+            // Assign a tag or a name to the enemy
+            enemy.tag = "Enemy";
+        }
+    }
+
+    private void DespawnSpiders()
+    {
+        GameObject mimicsParent = GameObject.Find("Mimics");
+        for(int i = 0; i < mimicsParent.transform.childCount; i++)
+        {
+            GameObject.Destroy(mimicsParent.transform.GetChild(i).gameObject);
+        }
+    }
 
     void ChangeSkybox()
     {
@@ -431,7 +424,7 @@ public class CameraController : MonoBehaviour
         lens.intensity.value = Mathf.Lerp(lens.intensity.value, 0.5f, cameraZoomSpeed * Time.deltaTime);
         adj.contrast.value = Mathf.Lerp(adj.contrast.value, 100.0f, cameraZoomSpeed * Time.deltaTime);
         adj.saturation.value = Mathf.Lerp(adj.saturation.value, 100.0f, cameraZoomSpeed * Time.deltaTime);
-        vignette.intensity.value = Mathf.Lerp(vignette.intensity.value, 0.6f, cameraZoomSpeed * Time.deltaTime); 
+        //vignette.intensity.value = Mathf.Lerp(vignette.intensity.value, 0.6f, cameraZoomSpeed * Time.deltaTime); 
     }
 
     void LerpPostProcessingBackwards()
@@ -442,7 +435,7 @@ public class CameraController : MonoBehaviour
         lens.intensity.value = Mathf.Lerp(lens.intensity.value, 0.0f, cameraZoomSpeed * Time.deltaTime);
         adj.contrast.value = Mathf.Lerp(adj.contrast.value, 0.0f, cameraZoomSpeed * Time.deltaTime);
         adj.saturation.value = Mathf.Lerp(adj.saturation.value, 0.0f, cameraZoomSpeed * Time.deltaTime);
-        vignette.intensity.value = Mathf.Lerp(vignette.intensity.value, 0.0f, cameraZoomSpeed * Time.deltaTime);
+        //vignette.intensity.value = Mathf.Lerp(vignette.intensity.value, 0.0f, cameraZoomSpeed * Time.deltaTime);
     }
 
     public IEnumerator processDarkEnding()
@@ -457,7 +450,9 @@ public class CameraController : MonoBehaviour
         RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, 0.09f, 0.5f);
         yield return new WaitForSeconds(0.5f);
         RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, 0.09f, 1.0f);
-        vignette.intensity.value = Mathf.Lerp(vignette.intensity.value, 0.6f, cameraZoomSpeed * Time.deltaTime);
+        //vignette.intensity.value = Mathf.Lerp(vignette.intensity.value, 0.6f, cameraZoomSpeed * Time.deltaTime);
+
+        
 
         yield return new WaitForSeconds(2);
 
@@ -468,11 +463,27 @@ public class CameraController : MonoBehaviour
         ExitGame();
     }
 
-    IEnumerator processLightEnding()
+    public IEnumerator processConsumedEnding()
     {
+        //Debug.Log("1 sec passed");
+        water.SetFloat("_Smoothness", Mathf.Lerp(water.GetFloat("_Smoothness"), 0.0f, 1.0f));
+        film.intensity.value = 1.0f;
+
+        RenderSettings.fogColor = Color.Lerp(RenderSettings.fogColor, Color.black, 1.0f);
+        RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, 0.09f, 0.5f);
+        yield return new WaitForSeconds(0.5f);
+        RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, 0.09f, 1.0f);
+        //vignette.intensity.value = Mathf.Lerp(vignette.intensity.value, 0.6f, cameraZoomSpeed * Time.deltaTime);
+
         yield return new WaitForSeconds(1);
 
+        //spawn spiders around player in a circle and swarm player
 
+        SpawnSpidersCircle(20, 5f);
+
+        yield return new WaitForSecondsRealtime(2);
+
+        ExitGame();
     }
 
     //todo: 
