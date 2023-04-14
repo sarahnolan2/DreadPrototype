@@ -9,6 +9,8 @@ public class BuoyTrigger : MonoBehaviour
     GameObject lightObj;
     float lightIntensity;
 
+    VisualTrigger buoyVisualCue;
+
     private bool isTriggered;
 
     // Start is called before the first frame update
@@ -17,6 +19,7 @@ public class BuoyTrigger : MonoBehaviour
         isTriggered = false;
         lightObj = this.transform.Find("Point Light").gameObject;
         lightIntensity = lightObj.GetComponent<Light>().intensity;
+        buoyVisualCue = this.GetComponent<VisualTrigger>();
     }
 
 
@@ -30,6 +33,7 @@ public class BuoyTrigger : MonoBehaviour
             if ( lightObj != null ) //get the light from the buoy
             {
                 gameController.getLightLife(lightObj);
+                buoyVisualCue.isPickedUp = true;
             }
             else
             {
