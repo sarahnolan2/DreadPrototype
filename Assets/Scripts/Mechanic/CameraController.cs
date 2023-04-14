@@ -198,7 +198,7 @@ public class CameraController : MonoBehaviour
                     RenderSettings.fogColor = Color.Lerp(RenderSettings.fogColor, Color.black, cameraZoomSpeed * 0.5f * Time.deltaTime);
                 }
 
-                RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, 0.05f, cameraZoomSpeed * 0.5f * Time.deltaTime);
+                RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, 0.003f, cameraZoomSpeed * 0.5f * Time.deltaTime);
 
                 //Debug.Log(cam.fieldOfView);
 
