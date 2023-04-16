@@ -6,6 +6,7 @@ public class Follower : MonoBehaviour
 {
     GameObject player;
 
+    [Range(1,30)]
     public float speed = 5f; // The speed of the enemy
     public float minDist = 10f; // The minimum distance from the player
     public float maxDist = 2f; // The maximum distance from the player

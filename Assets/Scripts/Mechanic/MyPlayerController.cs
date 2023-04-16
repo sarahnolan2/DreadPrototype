@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 public class MyPlayerController : MonoBehaviour
 {
@@ -14,8 +15,10 @@ public class MyPlayerController : MonoBehaviour
     public float topSpeed = 50.0f;
 
     private Vector3 boatAccelerationDirection = new Vector3(-1,0,0);
+    private Vector3 boatBackAccelerationDirection = new Vector3(1,0,0); 
     [Range(1,30)]
     public float boatAccelerationForce = 1f;
+    
 
     //---------------------------
 
@@ -43,6 +46,9 @@ public class MyPlayerController : MonoBehaviour
     [SerializeField]
     private AudioSource paddleAudioSource;
 
+    [SerializeField]
+    TextMeshProUGUI debugText;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -51,8 +57,8 @@ public class MyPlayerController : MonoBehaviour
         paddleBLeft = false;
         paddleBRight = false;
 
-        endRightRotation = Quaternion.Euler(0f, 0.1f, 0f); //boatRotation
-        endLeftRotation = Quaternion.Euler(0f, -0.1f, 0f); //-boatRotation
+        endRightRotation = Quaternion.Euler(0f, 0.06f, 0f); //0.1 //boatRotation
+        endLeftRotation = Quaternion.Euler(0f, -0.06f, 0f); //-0.1 //-boatRotation
 
         isCoroutineRunning = false;
     }
@@ -107,7 +113,7 @@ public class MyPlayerController : MonoBehaviour
             //move forward and left
             //this.transform.Translate(new Vector3(-0.5f, 0, -0.5f), Space.Self);
 
-            rb.AddForce(boatAccelerationDirection * boatAccelerationForce, ForceMode.Acceleration);
+            //rb.AddForce(boatAccelerationDirection * boatAccelerationForce, ForceMode.Acceleration);
 
             rb.AddRelativeForce(new Vector3(-boatSpeed, 0, -boatSpeed));
 
@@ -131,7 +137,7 @@ public class MyPlayerController : MonoBehaviour
 
             //move forward and right
 
-            rb.AddForce(boatAccelerationDirection * boatAccelerationForce, ForceMode.Acceleration);
+           // rb.AddForce(boatAccelerationDirection * boatAccelerationForce, ForceMode.Acceleration);
 
             this.GetComponent<Rigidbody>().AddRelativeForce(new Vector3(-boatSpeed, 0, boatSpeed));
 
@@ -156,6 +162,8 @@ public class MyPlayerController : MonoBehaviour
             //Debug.Log("paddle backward left");
 
             //move backward and left
+            rb.AddForce(boatBackAccelerationDirection * boatAccelerationForce, ForceMode.Acceleration);
+
             this.GetComponent<Rigidbody>().AddRelativeForce(new Vector3(boatSpeed, 0, -boatSpeed));
 
             //this.GetComponent<Transform>().Rotate(0, boatRotation, 0);
@@ -177,6 +185,8 @@ public class MyPlayerController : MonoBehaviour
             //Debug.Log("paddle backward right");
 
             //move backwards and right
+            rb.AddForce(boatBackAccelerationDirection * boatAccelerationForce, ForceMode.Acceleration);
+
             this.GetComponent<Rigidbody>().AddRelativeForce(new Vector3(boatSpeed, 0, boatSpeed));
 
             //this.GetComponent<Transform>().Rotate(0, -boatRotation, 0);
@@ -190,6 +200,8 @@ public class MyPlayerController : MonoBehaviour
 
             paddleBRight = false;
         }
+        //------------------------
+        debugText.text = "\nSpeed: " + gameObject.GetComponent<Rigidbody>().velocity;
     }
 
     IEnumerator RotateBoatLeft()
@@ -206,6 +218,7 @@ public class MyPlayerController : MonoBehaviour
             yield return null;
         }
         rotationCounter = 0f;
+        yield return new WaitForSecondsRealtime(0.2f);
         isCoroutineRunning = false;
     }
 
@@ -223,6 +236,7 @@ public class MyPlayerController : MonoBehaviour
             yield return null;
         }
         rotationCounter = 0f;
+        yield return new WaitForSecondsRealtime(0.2f);
         isCoroutineRunning = false;
     }
 }

@@ -65,7 +65,7 @@ MonoBehaviour:
   minGrowCoef: 4.5
   maxGrowCoef: 6.5
   newLegCooldown: 0.3
-  velocity: {x: 0.80457604, y: 0, z: -0.280931}
+  velocity: {x: 0.7397218, y: 0, z: -0.62378675}
 --- !u!114 &608258904
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -93,6 +93,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd3f8f8c7a4555940befb846e5a6d405, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  speed: 10
+  minDist: 10
+  maxDist: 2
 --- !u!1 &8675915458194695971
 GameObject:
   m_ObjectHideFlags: 0

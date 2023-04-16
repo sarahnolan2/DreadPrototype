@@ -27,6 +27,7 @@ public class CameraController : MonoBehaviour
     private PhysicMaterial ogPhysicMaterial;
     public PhysicMaterial otherPhysMaterial;
     public Material water;
+    public Light sunlight;
 
     private Vector3 offset;
     private Camera cam;
@@ -36,7 +37,6 @@ public class CameraController : MonoBehaviour
     private float resultFOV;
 
     private bool isCrankCalled; //checks if we are incrementing the lamp with the crank or the buoy
-    private CrankController crankController;
 
     private bool isTimerRunning;
     //private float startTime;
@@ -66,6 +66,7 @@ public class CameraController : MonoBehaviour
     {
 
         playerLife = cam.fieldOfView;
+        sunlight.intensity = 2f;
 
         // reset water material
         water.color = new Color(0.0f / 255.0f, 79.0f / 255.0f, 190.0f / 255.0f); //reset it to blue
@@ -90,10 +91,6 @@ public class CameraController : MonoBehaviour
         {
             SceneManager.LoadScene("Menu");
         }
-        else
-        {
-
-        }
 
         //------------------------------------------------------------------------------------------------------
         crossfade.newSoundtrack(audioClips[0]);
@@ -101,11 +98,11 @@ public class CameraController : MonoBehaviour
         cam = GetComponent<Camera>();
         offset = new Vector3(player.position.x + cam.transform.position.x, player.position.y + cam.transform.position.y, player.position.z + cam.transform.position.z); //(player.position.x, player.position.y + 8.0f, player.position.z + 7.0f);
                                                                                                                                                                         //offset = new Vector3(player.position.x, player.position.y + cameraInitOffsetY, player.position.z + cameraInitOffsetZ); //(player.position.x, player.position.y + 8.0f, player.position.z + 7.0f);
-
-        crankController = this.gameObject.GetComponent<CrankController>();
-
+                                                                                                                                                                        
         ogSkybox = RenderSettings.skybox;
         ogPhysicMaterial = GameObject.Find("SeaFloor").GetComponent<Collider>().material;
+        //RenderSettings.ambientIntensity = 0.4f;
+
         didWeChangeMood = false;
         initialFOV = cam.fieldOfView;
         playerLife = cam.fieldOfView;
@@ -171,7 +168,7 @@ public class CameraController : MonoBehaviour
 
                 //change the mood when the field of view is halfway completed its trajectory
                 //only runs once
-                if (cam.fieldOfView / initialFOV <= 0.5 && !didWeChangeMood)
+                if (cam.fieldOfView <= 45f && !didWeChangeMood)
                 {
                     crossfade.newSoundtrack(audioClips[2]);
 
@@ -183,11 +180,13 @@ public class CameraController : MonoBehaviour
 
 
                     split.active = true; //show split toning
-                    tone.mode.Override(TonemappingMode.ACES);                    
+                    tone.mode.Override(TonemappingMode.ACES);
+                    //sunlight.intensity = 0.1f;
+                    RenderSettings.fogColor = new Color(119.0f / 255.0f, 135.0f / 255.0f, 164.0f / 255.0f);
 
                     didWeChangeMood = true;
 
-                    SpawnSpiders(20);
+                    SpawnSpiders(1);//20
 
 
                 }/*
@@ -197,23 +196,23 @@ public class CameraController : MonoBehaviour
                 else if (didWeChangeMood) //changed mood true and want to repeatedly call stuff
                 {
                     water.color = Color.Lerp(water.color, Color.black, cameraZoomSpeed * 2 * Time.deltaTime);
-
+                    
                     
                     //lerp post-p 
                     LerpPostProcessing();
                 }
 
                 //lerp the fog
-                if (cam.fieldOfView / initialFOV > 0.25)
+                if (cam.fieldOfView > 45)
                 {
-                    RenderSettings.fogColor = Color.Lerp(RenderSettings.fogColor, new Color(41.0f / 255.0f, 17.0f / 255.0f, 16.0f / 255.0f), cameraZoomSpeed * 2f * Time.deltaTime); //new Color(41.0f / 255.0f, 17.0f / 255.0f, 16.0f / 255.0f)
+                    RenderSettings.fogColor = Color.Lerp(RenderSettings.fogColor, new Color(2.0f / 255.0f, 19.0f / 255.0f, 53.0f / 255.0f), cameraZoomSpeed * 2f * Time.deltaTime); //new Color(41.0f / 255.0f, 17.0f / 255.0f, 16.0f / 255.0f)
                 }
                 else
                 {
                     RenderSettings.fogColor = Color.Lerp(RenderSettings.fogColor, Color.black, cameraZoomSpeed * 0.5f * Time.deltaTime);
                 }
 
-                RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, 0.003f, cameraZoomSpeed * 0.5f * Time.deltaTime);
+                RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, 0.03f, cameraZoomSpeed * 0.5f * Time.deltaTime);
 
                 //Debug.Log(cam.fieldOfView);
 
@@ -247,7 +246,7 @@ public class CameraController : MonoBehaviour
 
                 //lerp the fog
 
-                RenderSettings.fogColor = Color.Lerp(RenderSettings.fogColor, new Color(248.0f / 255.0f, 187.0f / 255.0f, 142.0f / 255.0f), cameraZoomSpeed *  speedModifier * 2f * Time.deltaTime);
+                RenderSettings.fogColor = Color.Lerp(RenderSettings.fogColor, new Color(146.0f / 255.0f, 168.0f / 255.0f, 206.0f / 255.0f), cameraZoomSpeed *  speedModifier * 2f * Time.deltaTime);
 
                 RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, 0.001f, cameraZoomSpeed * speedModifier * 2 * Time.deltaTime);
 
@@ -266,12 +265,16 @@ public class CameraController : MonoBehaviour
         transform.position = player.position + offset;
         transform.LookAt(player.position + new Vector3(0, 0.9f, 0)); //we add y height for the face distance offset
 
-        debugText.text = "FOV: " + cam.fieldOfView;
+        
 
         if(Input.GetKeyDown(KeyCode.Tab)) //TODO: DELETE THIS, ONLY USEFUL FOR DEBUGGING
         {
             Cursor.lockState = CursorLockMode.None;
         }
+
+        //-----------------------------------------------
+        debugText.text = "FOV: " + cam.fieldOfView
+            +"\nResultFOV: "+resultFOV;
     }
 
     IEnumerator darknessBack()
@@ -354,7 +357,8 @@ public class CameraController : MonoBehaviour
 
     private void DarknessRemovalCheck()
     {
-        if (resultFOV / initialFOV >= 0.5)
+        /* //commented out to keep nightime after first time under 45FOV
+        if (resultFOV >= 45)
         {
             //ChangeSkybox
             RenderSettings.skybox = ogSkybox;
@@ -364,7 +368,7 @@ public class CameraController : MonoBehaviour
             //physmaterialCollider.material = ogPhysicMaterial;
 
             //speedModifier = 5.0f; //faster
-
+            sunlight.intensity += 0.5f;
             split.active = false; //hide split toning
             tone.mode.Override(TonemappingMode.Neutral);
 
@@ -372,9 +376,9 @@ public class CameraController : MonoBehaviour
             crossfade.newSoundtrack(audioClips[1]);
         }
         else
-        {
+        {*/
             crossfade.newSoundtrack(audioClips[1]);
-        }
+        //}
     }
 
 
@@ -441,7 +445,7 @@ public class CameraController : MonoBehaviour
     {
         //Debug.Log("post p");
         chrome.intensity.value = Mathf.Lerp(chrome.intensity.value, 1.0f, cameraZoomSpeed * Time.deltaTime);
-        film.intensity.value = Mathf.Lerp(film.intensity.value, 1.0f, cameraZoomSpeed * 0.5f * Time.deltaTime);
+        film.intensity.value = Mathf.Lerp(film.intensity.value, 1.0f, cameraZoomSpeed * 2f * Time.deltaTime);
         lens.intensity.value = Mathf.Lerp(lens.intensity.value, 0.5f, cameraZoomSpeed * Time.deltaTime);
         adj.contrast.value = Mathf.Lerp(adj.contrast.value, 100.0f, cameraZoomSpeed * Time.deltaTime);
         adj.saturation.value = Mathf.Lerp(adj.saturation.value, 100.0f, cameraZoomSpeed * Time.deltaTime);
