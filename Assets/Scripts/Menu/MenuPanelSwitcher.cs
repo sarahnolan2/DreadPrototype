@@ -28,6 +28,13 @@ public class MenuPanelSwitcher : MonoBehaviour
         LoadScreen("MainMenuPanel");
 
         Cursor.lockState = CursorLockMode.None;
+
+        //-----------------------
+
+        if (GlobalGameBehavior.GetLastScene().Equals(""))
+        {
+            GlobalGameBehavior.SetLastScene("Menu");
+        }
     }
 
 

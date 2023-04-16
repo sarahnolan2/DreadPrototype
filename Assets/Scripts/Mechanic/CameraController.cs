@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 [RequireComponent(typeof(AudioSource))]
 public class CameraController : MonoBehaviour
@@ -57,7 +58,9 @@ public class CameraController : MonoBehaviour
 
     [SerializeField] private GameObject MimicPrefab;
 
-    //private float endTimerStart;
+
+    //UI
+    public TextMeshProUGUI debugText;
 
     void resetVariables()
     {
@@ -81,6 +84,18 @@ public class CameraController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        //------------------------------------------------------------------------------------------------------
+        //if game hasn't loaded the menu yet, load the menu
+        if (GlobalGameBehavior.GetLastScene().Equals(""))
+        {
+            SceneManager.LoadScene("Menu");
+        }
+        else
+        {
+
+        }
+
+        //------------------------------------------------------------------------------------------------------
         crossfade.newSoundtrack(audioClips[0]);
         // camera position
         cam = GetComponent<Camera>();
@@ -251,6 +266,12 @@ public class CameraController : MonoBehaviour
         transform.position = player.position + offset;
         transform.LookAt(player.position + new Vector3(0, 0.9f, 0)); //we add y height for the face distance offset
 
+        debugText.text = "FOV: " + cam.fieldOfView;
+
+        if(Input.GetKeyDown(KeyCode.Tab)) //TODO: DELETE THIS, ONLY USEFUL FOR DEBUGGING
+        {
+            Cursor.lockState = CursorLockMode.None;
+        }
     }
 
     IEnumerator darknessBack()
@@ -483,13 +504,11 @@ public class CameraController : MonoBehaviour
 
         yield return new WaitForSecondsRealtime(2);
 
-        ExitGame();
+        QuitGame();
     }
 
     //todo: 
-    // sun rotation to lower - but also in front of player's face?
-    // adjust camera zoom speed
-    // check volume sounds ?
+    // check volume sounds ? audio manager in global settings
 
     
     /*
@@ -525,5 +544,17 @@ public class CameraController : MonoBehaviour
     public void ExitGame()
     {
         SceneManager.LoadScene("Menu");
+    }
+
+    public void QuitGame()
+    {
+        // save any game data here
+        #if UNITY_EDITOR
+        // Application.Quit() does not work in the editor so
+        // UnityEditor.EditorApplication.isPlaying need to be set to false to end the game
+        UnityEditor.EditorApplication.isPlaying = false;
+        #else
+        Application.Quit();
+        #endif
     }
 }

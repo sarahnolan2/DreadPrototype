@@ -9,64 +9,78 @@ public class VisualTrigger : MonoBehaviour
     [SerializeField]
     private GameObject visualCue; //holds all of the visual cue content
 
-    public bool isPickedUp;
+    //for crates
+    public bool isCrate;
+    
+    CrankController crankController;
+    public CrateTrigger crateTrigger;
+
     void Awake()
     {
-        isPickedUp = false;
         isPlayerInRange = false;
     }
 
     private void Start()
     {
         visualCue.SetActive(false);
+
+        if (crateTrigger != null && isCrate)
+            crankController = crateTrigger.crankController;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        if (visualCue != null)
-        {
-
-            if (isPlayerInRange && !isPickedUp)
-            {
-                //show visual cue if player is in range
-                visualCue.SetActive(true);
-                
-            }
-            else
-            {
-                //don't show visual cue if player is not in range
-                visualCue.SetActive(false);
-            }
-        }
-    }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.tag == "Player" && !isPickedUp)
+        if (other.gameObject.tag == "Player")
         {
             isPlayerInRange = true;
-            //Debug.Log("IN RANGE");
+            //Debug.Log("IN RANGE OF "+transform.parent.gameObject.name);
 
             if (visualCue != null)
             {
-                //show visual cue if player is in range
-                visualCue.SetActive(true);
+                //if this is a crate
+                if (isCrate && !crankController.GetHasCrank())
+                {
+                    //Debug.Log("hasCrank: " + crankController.GetHasCrank());
+                    //show visual cue if player is in range
+                    visualCue.SetActive(true);
+                    //Debug.Log("VISUAL CUE IS ON");
+                }
+                //if this is a buoy
+                else if (!isCrate)
+                {
+                    //show visual cue if player is in range
+                    visualCue.SetActive(true);
+                    //Debug.Log("VISUAL CUE IS ON");
+                }                
             }
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.gameObject.tag == "Player" && !isPickedUp)
+        if (other.gameObject.tag == "Player")
         {
             isPlayerInRange = false;
-            //Debug.Log("OUT OF RANGE");
+            //Debug.Log("LEFT RANGE OF "+ transform.parent.gameObject.name);
 
             if (visualCue != null)
             {
-                //don't show visual cue if player is not in range
+                //if this is a crate
+                if (isCrate && !crankController.GetHasCrank())
+                {
+                    //Debug.Log("hasCrank: " + crankController.GetHasCrank());
+                    //show visual cue if player is not in range
+                    visualCue.SetActive(false);
+                    //Debug.Log("VISUAL CUE IS OFF");
+                }
+                //if this is a buoy
+                else if(!isCrate)
+                {
+                //show visual cue if player is not in range
                 visualCue.SetActive(false);
+                    //Debug.Log("VISUAL CUE IS OFF");
+                }
             }
         }
     }
