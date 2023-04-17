@@ -4,7 +4,7 @@
 
  Credits:
 
-- Music from Pixabay
+- Music from Pixabay, SFX from Mixkit
 - [Boats Low Poly](https://assetstore.unity.com/packages/3d/vehicles/sea/boats-polypack-189866)
 - Reutilised a 3D character model I made for a previous game.
 - [Skybox Shader](https://assetstore.unity.com/packages/vfx/shaders/free-skybox-extended-shader-107400)
