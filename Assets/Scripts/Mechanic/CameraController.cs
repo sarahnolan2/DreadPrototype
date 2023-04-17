@@ -50,10 +50,14 @@ public class CameraController : MonoBehaviour
     private SplitToning split;
     private Tonemapping tone;
     private Vignette vignette;
-    
+
     //private AudioSource audioSource = new AudioSource();
+    private AudioSource audioSource;
     public CrossfadeMusic crossfade;
-    public AudioClip[] audioClips = new AudioClip[3];
+    public AudioClip[] audioClips = new AudioClip[5];
+    [SerializeField]
+    private AudioSource heartbeatAudioSource;
+    private bool heartbeatPlayed = false;
 
 
     [SerializeField] private GameObject MimicPrefab;
@@ -144,7 +148,32 @@ public class CameraController : MonoBehaviour
 
         //the music gets crossfaded rather than played one at a time
         crossfade.newSoundtrack(audioClips[1]);
-    }    
+
+        //get component for audioSource
+        audioSource = GetComponent<AudioSource>();
+
+        //select clip for audioSource
+        audioSource.clip = audioClips[3];
+
+        //play on loop
+        audioSource.loop = true;
+        audioSource.Play();
+    }
+
+    void Update()
+    {
+        if (cam.fieldOfView <= 25 && !heartbeatPlayed)
+        {
+            heartbeatAudioSource.Play();
+            heartbeatPlayed = true;
+        }
+        else if (cam.fieldOfView > 35 && heartbeatPlayed)
+        {
+            heartbeatAudioSource.Stop();
+            heartbeatPlayed = false;
+        }
+
+    }
 
     // Update is called once per frame
     void LateUpdate()
@@ -157,7 +186,6 @@ public class CameraController : MonoBehaviour
             StartDarkness();
             hasDarknessStarted = true;
         }
-
 
         if (isTimerRunning) //makes sure we dont run "timer ran out" case infinitely and only once
         {
@@ -254,9 +282,11 @@ public class CameraController : MonoBehaviour
                 //lerp post-p 
                 LerpPostProcessingBackwards();
 
-                if(cam.fieldOfView > 40)
+                if(cam.fieldOfView == 40)
                 {
-                    DespawnSpiders();
+                    //DespawnSpiders();
+                    heartbeatAudioSource.Stop();
+
                 }
             }
             else
@@ -383,7 +413,7 @@ public class CameraController : MonoBehaviour
         }
         else
         {*/
-            crossfade.newSoundtrack(audioClips[1]);
+        crossfade.newSoundtrack(audioClips[1]);
         //}
     }
 

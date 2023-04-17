@@ -9,6 +9,8 @@ public class BuoyTrigger : MonoBehaviour
     GameObject lightObj;
     //float lightIntensity;
 
+    private AudioSource buoyAudioSource;
+
     GameObject buoyVisualTrigger;
 
     //private bool isTriggered;
@@ -20,6 +22,8 @@ public class BuoyTrigger : MonoBehaviour
         lightObj = this.transform.Find("Point Light").gameObject;
         //lightIntensity = lightObj.GetComponent<Light>().intensity;
         buoyVisualTrigger = transform.Find("VisualTrigger").gameObject;
+        buoyAudioSource = this.GetComponent<AudioSource>();
+        buoyAudioSource.Play();
     }
 
 
@@ -32,8 +36,11 @@ public class BuoyTrigger : MonoBehaviour
 
             if ( lightObj != null ) //get the light from the buoy
             {
+                buoyAudioSource.loop = false;
+                buoyAudioSource.volume = 0f;
                 gameController.getLightLife(lightObj);
                 GameObject.Destroy(buoyVisualTrigger); //remove the highlight object since we picked up the buoy's light
+                
             }
             else
             {

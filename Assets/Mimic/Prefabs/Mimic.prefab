@@ -194,7 +194,7 @@ MonoBehaviour:
   minGrowCoef: 4.5
   maxGrowCoef: 6.5
   newLegCooldown: 0.3
-  velocity: {x: 0.9068411, y: 0, z: 0.41134727}
+  velocity: {x: -0.27154747, y: 0, z: -0.5770318}
 --- !u!114 &608258904
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -208,7 +208,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   height: 5
-  speed: 5
+  speed: 8
   velocityLerpCoef: 4
 --- !u!114 &6159932030710778606
 MonoBehaviour:
@@ -222,7 +222,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd3f8f8c7a4555940befb846e5a6d405, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 10
+  speed: 8
   minDist: 10
   maxDist: 2
 --- !u!1 &8675915458194695971

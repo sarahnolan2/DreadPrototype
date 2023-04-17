@@ -37,6 +37,10 @@ namespace MimicSpace
             if (Physics.Raycast(transform.position + Vector3.up * 5f, -Vector3.up, out hit))
                 destHeight = new Vector3(transform.position.x, hit.point.y + height, transform.position.z);
             transform.position = Vector3.Lerp(transform.position, destHeight, velocityLerpCoef * Time.deltaTime);
+            if (myMimic.transform.position.y > 9.8f)
+            {
+                myMimic.transform.position = new Vector3(transform.position.x, 9.8f, transform.position.z);
+            }
         }
     }
 
