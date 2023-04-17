@@ -57,8 +57,8 @@ public class MyPlayerController : MonoBehaviour
         paddleBLeft = false;
         paddleBRight = false;
 
-        endRightRotation = Quaternion.Euler(0f, 0.06f, 0f); //0.1 //boatRotation
-        endLeftRotation = Quaternion.Euler(0f, -0.06f, 0f); //-0.1 //-boatRotation
+        endRightRotation = Quaternion.Euler(0f, 0.05f, 0f); //0.1 //boatRotation
+        endLeftRotation = Quaternion.Euler(0f, -0.05f, 0f); //-0.1 //-boatRotation
 
         isCoroutineRunning = false;
     }

@@ -53,9 +53,11 @@ namespace MimicSpace
         [Tooltip("This must be updates as the Mimin moves to assure great leg placement")]
         public Vector3 velocity;
 
+        AudioSource aos;
         void Start()
         {
             ResetMimic();
+            aos = GameObject.Find("SpiderStepSFX").GetComponent<AudioSource>();
         }
 
         private void OnValidate()
@@ -102,6 +104,8 @@ namespace MimicSpace
                 // Offset The leg origin by a random vector
                 Vector2 offset = Random.insideUnitCircle * newLegRadius;
                 Vector3 newLegPosition = legPlacerOrigin + new Vector3(offset.x, 0, offset.y);
+
+                
 
                 // If the mimic is moving and the new leg position is behind it, mirror it to make
                 // it reach in front of the mimic.
@@ -156,6 +160,7 @@ namespace MimicSpace
             newLeg.SetActive(true);
             newLeg.GetComponent<Leg>().Initialize(footPosition, legResolution, maxLegDistance, growCoef, myMimic, lifeTime);
             newLeg.transform.SetParent(myMimic.transform);
+            aos.Play(); //leg splash sfx
         }
 
         public void RecycleLeg(GameObject leg)

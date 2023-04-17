@@ -61,6 +61,7 @@ public class CameraController : MonoBehaviour
 
     //UI
     public TextMeshProUGUI debugText;
+    private DisplayText display;
 
     void resetVariables()
     {
@@ -102,6 +103,7 @@ public class CameraController : MonoBehaviour
         ogSkybox = RenderSettings.skybox;
         ogPhysicMaterial = GameObject.Find("SeaFloor").GetComponent<Collider>().material;
         //RenderSettings.ambientIntensity = 0.4f;
+        display = GameObject.Find("Canvas").GetComponent<DisplayText>();
 
         didWeChangeMood = false;
         initialFOV = cam.fieldOfView;
@@ -188,7 +190,8 @@ public class CameraController : MonoBehaviour
 
                     SpawnSpiders(1);//20
 
-
+                    string displayThis = "I should use my lamp since it's dark.";
+                    StartCoroutine(display.DisplayThisText(displayThis));
                 }/*
                 else if (cam.fieldOfView / initialFOV <= 0.3 && didWeChangeMood) {
                     water.SetFloat("_Smoothness", 0.0f);
@@ -235,8 +238,6 @@ public class CameraController : MonoBehaviour
             //keep lerping while the field of view is still smaller than the result
             if (cam.fieldOfView < (resultFOV - 8f)) //8f is for lerp adjustment
             {
-                DespawnSpiders();
-
                 cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, resultFOV, cameraZoomSpeed * speedModifier * 5 * Time.deltaTime);
                 playerLife = cam.fieldOfView;
                 //Debug.Log("lerp cam: " + cam.fieldOfView + " result: " + resultFOV);
@@ -252,6 +253,11 @@ public class CameraController : MonoBehaviour
 
                 //lerp post-p 
                 LerpPostProcessingBackwards();
+
+                if(cam.fieldOfView > 40)
+                {
+                    DespawnSpiders();
+                }
             }
             else
             {
@@ -394,6 +400,7 @@ public class CameraController : MonoBehaviour
             float randomRange = Random.Range(minDistance, maxDistance);
             Vector3 spawnPosition = new Vector3(this.transform.position.x + randomRange, this.transform.position.y + 6f, this.transform.position.z + randomRange);
             GameObject.Instantiate(MimicPrefab, spawnPosition, Quaternion.identity, mimicsParent.transform);
+            Debug.LogWarning("spawned spider");
         }
     }
 
@@ -425,6 +432,7 @@ public class CameraController : MonoBehaviour
         for(int i = 0; i < mimicsParent.transform.childCount; i++)
         {
             GameObject.Destroy(mimicsParent.transform.GetChild(i).gameObject);
+            Debug.LogWarning("despawned spider");
         }
     }
 

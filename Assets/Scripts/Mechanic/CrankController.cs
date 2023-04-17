@@ -31,7 +31,9 @@ public class CrankController : MonoBehaviour
     [SerializeField] AudioSource crankingAudioSrc;
     [SerializeField] AudioSource crankBreakSrc;
     [SerializeField] AudioSource crankGetSrc;
-    [SerializeField] AudioSource crateBreakSrc; //not needed?
+    [SerializeField] AudioSource crateBreakSrc; //not needed? double for 2 sfx
+
+    private DisplayText display;
 
     // Start is called before the first frame update
     void Start()
@@ -42,6 +44,8 @@ public class CrankController : MonoBehaviour
 
         crankAmount = baseCrankAmount;
         crankFOVCounter = 0;
+
+        display = GameObject.Find("Canvas").GetComponent<DisplayText>();
     }
 
     // Update is called once per frame
@@ -105,6 +109,9 @@ public class CrankController : MonoBehaviour
 
         GameObject.Destroy(crateObj);
         //crateBreakSrc.Play();
+
+        string textUI = "I can use my lamp now.";
+        StartCoroutine(display.DisplayThisText(textUI));
     }
     
     public void BreakCrank()
@@ -113,6 +120,9 @@ public class CrankController : MonoBehaviour
         hasCrank = false;
         Debug.Log("CRANK BREAK");
         crankBreakSrc.Play();
+
+        string textUI = "My crank broke.";
+        StartCoroutine(display.DisplayThisText(textUI));
 
         crankFOVCounter = 0;
     }

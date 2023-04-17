@@ -11,10 +11,12 @@ public class Follower : MonoBehaviour
     public float minDist = 10f; // The minimum distance from the player
     public float maxDist = 2f; // The maximum distance from the player
 
+    AudioSource aos;
     // Start is called before the first frame update
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player");
+        aos = GameObject.Find("DyingEndEatenSFX").GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
@@ -45,6 +47,8 @@ public class Follower : MonoBehaviour
         {
             // Do something else, such as attack or stop
             Debug.Log("Enemy reached player");
+            StartCoroutine(player.GetComponent<CameraController>().processDarkEnding());            
+            aos.Play();
         }
 
         // Make the enemy look towards the direction of the player
