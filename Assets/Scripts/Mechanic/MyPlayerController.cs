@@ -211,7 +211,7 @@ public class MyPlayerController : MonoBehaviour
         while (rotationCounter < rotationDuration)
         {
             //Increase the counter by delta time
-            rotationCounter += Time.deltaTime;
+            rotationCounter += 0.0015f; //Time.deltaTime
             //Apply the rotation to the object
             transform.rotation = transform.rotation * endLeftRotation;
             //Wait for next frame
@@ -229,7 +229,7 @@ public class MyPlayerController : MonoBehaviour
         while (rotationCounter < rotationDuration)
         {
             //Increase the counter by delta time
-            rotationCounter += Time.deltaTime;
+            rotationCounter += 0.0015f; //Time.deltaTime
             //Apply the rotation to the object
             transform.rotation = transform.rotation * endRightRotation;
             //Wait for next frame
