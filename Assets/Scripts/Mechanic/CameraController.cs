@@ -61,6 +61,7 @@ public class CameraController : MonoBehaviour
 
 
     [SerializeField] private GameObject MimicPrefab;
+    private GameObject spiderInstance;
 
 
     //UI
@@ -315,7 +316,10 @@ public class CameraController : MonoBehaviour
 
     IEnumerator darknessBack()
     {
-        if(isCrankCalled)
+        if (spiderInstance != null)
+            spiderInstance.GetComponent<Follower>().isFollowing = true; //allow spider to follow again
+
+        if (isCrankCalled)
         {
             yield return new WaitForSeconds(0.2f); //wait before making the darkness return
         }
@@ -332,6 +336,8 @@ public class CameraController : MonoBehaviour
     public void getLightLife(GameObject light)
     {
         isCrankCalled = false; //the buoy calls the light
+        if(spiderInstance != null && spiderInstance.GetComponent<Follower>().distance < 30f)
+            spiderInstance.GetComponent<Follower>().isFollowing = false; //stop spider from following
 
         //kill the light
         GameObject.Destroy(light);
@@ -367,6 +373,8 @@ public class CameraController : MonoBehaviour
     public void CrankLife(float incrementAmount) //earn a small bit of life from cranking once, making the player press a lot to earn more
     {
         isCrankCalled = true; //the crank calls the light
+        if (spiderInstance != null && spiderInstance.GetComponent<Follower>().distance < 30f)
+            spiderInstance.GetComponent<Follower>().isFollowing = false; //stop spider from following
 
         if (!hasDarknessStarted)
             return;
@@ -429,7 +437,7 @@ public class CameraController : MonoBehaviour
         {
             float randomRange = Random.Range(minDistance, maxDistance);
             Vector3 spawnPosition = new Vector3(this.transform.position.x + randomRange, this.transform.position.y + 6f, this.transform.position.z + randomRange);
-            GameObject.Instantiate(MimicPrefab, spawnPosition, Quaternion.identity, mimicsParent.transform);
+            spiderInstance = GameObject.Instantiate(MimicPrefab, spawnPosition, Quaternion.identity, mimicsParent.transform);
             Debug.LogWarning("spawned spider");
         }
     }
@@ -450,6 +458,7 @@ public class CameraController : MonoBehaviour
 
             // Instantiate the enemy prefab at the spawn position
             GameObject enemy = Instantiate(MimicPrefab, spawnPos, Quaternion.identity);
+            enemy.GetComponent<Follower>().isConsumedEnding = true;
 
             // Assign a tag or a name to the enemy
             enemy.tag = "Enemy";
@@ -529,6 +538,11 @@ public class CameraController : MonoBehaviour
     public IEnumerator processConsumedEnding()
     {
         //Debug.Log("1 sec passed");
+
+        //spawn spiders around player in a circle and swarm player
+        SpawnSpidersCircle(20, 10f);
+
+        yield return new WaitForSeconds(3);
         water.SetFloat("_Smoothness", Mathf.Lerp(water.GetFloat("_Smoothness"), 0.0f, 1.0f));
         film.intensity.value = 1.0f;
 
@@ -538,11 +552,10 @@ public class CameraController : MonoBehaviour
         RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, 0.09f, 1.0f);
         //vignette.intensity.value = Mathf.Lerp(vignette.intensity.value, 0.6f, cameraZoomSpeed * Time.deltaTime);
 
-        yield return new WaitForSeconds(1);
+        //yield return new WaitForSeconds(1);
 
-        //spawn spiders around player in a circle and swarm player
+        
 
-        SpawnSpidersCircle(20, 5f);
 
         yield return new WaitForSecondsRealtime(2);
 
