@@ -14,5 +14,4 @@
 - [Crates](https://assetstore.unity.com/packages/3d/props/industrial/ben3d-crate-7548)
 - [Crank sound effects](https://assetstore.unity.com/packages/audio/sound-fx/the-accountant-134417) 
 - [Rocks](https://assetstore.unity.com/packages/3d/environments/lowpoly-rocks-137970)
-- [Old Sea Port](https://assetstore.unity.com/packages/3d/environments/old-sea-port-environment-36897)
 
