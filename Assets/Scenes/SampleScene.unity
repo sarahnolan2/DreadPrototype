@@ -4205,6 +4205,10 @@ PrefabInstance:
       propertyPath: debugText
       value: 
       objectReference: {fileID: 17121860}
+    - target: {fileID: 837890023, guid: 17c56660cef6fcc4088e1f30292e8e4a, type: 3}
+      propertyPath: rotationDuration
+      value: 0.72
+      objectReference: {fileID: 0}
     - target: {fileID: 2051766442, guid: 17c56660cef6fcc4088e1f30292e8e4a, type: 3}
       propertyPath: m_audioClip
       value: 

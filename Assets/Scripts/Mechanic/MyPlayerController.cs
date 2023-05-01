@@ -26,10 +26,15 @@ public class MyPlayerController : MonoBehaviour
     Quaternion endLeftRotation;
 
     float rotationCounter = 0f;
-    [Range(0.1f,3.0f)]
-    public float rotationDuration = 0.5f;
+    [Range(0.1f,3.0f)] 
+    public float rotationDuration = 0.5f; //0.72 with coroutines
 
     bool isCoroutineRunning;
+
+    bool isRotatingLeft;
+    bool isRotatingRight;
+    float rotationEndThreshold = 0.2f;
+    float rotationSpeed = 1.5f;
 
     //----------------------
 
@@ -57,10 +62,12 @@ public class MyPlayerController : MonoBehaviour
         paddleBLeft = false;
         paddleBRight = false;
 
-        endRightRotation = Quaternion.Euler(0f, 0.05f, 0f); //0.1 //boatRotation
-        endLeftRotation = Quaternion.Euler(0f, -0.05f, 0f); //-0.1 //-boatRotation
+        endRightRotation = Quaternion.Euler(0f, 0.8f, 0f); //0.05 w coroutines //boatRotation
+        endLeftRotation = Quaternion.Euler(0f, -0.8f, 0f); //-0.05 w coroutines //-boatRotation
 
         isCoroutineRunning = false;
+        isRotatingLeft = false;
+        isRotatingRight = false;
     }
 
     // Update is called once per frame
@@ -104,7 +111,10 @@ public class MyPlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if(paddleFLeft && !isCoroutineRunning)
+        //if player is currently rotating - isRotating = true;
+        //if player is not currently rotating - isRotating = false;
+
+        if(paddleFLeft && !isCoroutineRunning && !isRotatingLeft && !isRotatingRight) //only runs once to move
         {
             paddleAudioSource.Play();
             // make the player paddle forward left
@@ -118,18 +128,21 @@ public class MyPlayerController : MonoBehaviour
             rb.AddRelativeForce(new Vector3(-boatSpeed, 0, -boatSpeed));
 
             //this.GetComponent<Transform>().Rotate(0, -boatRotation, 0);
-            StartCoroutine(RotateBoatLeft());
-            
+            //StartCoroutine(RotateBoatLeft());
+            isRotatingLeft = true;
+
+
             if (rb.velocity.magnitude > topSpeed)
                 rb.velocity = rb.velocity.normalized * topSpeed;
 
             //particle sploosh
             //GameObject.Instantiate(particles, (this.transform.position + new Vector3(-10.0f,1.0f,-10.0f)), Quaternion.identity);
-            
-            paddleFLeft = false;
-        }
 
-        if(paddleFRight && !isCoroutineRunning)
+            Debug.Log("paddleFLeft");
+            paddleFLeft = false;
+        }        
+
+        if(paddleFRight && !isCoroutineRunning && !isRotatingLeft && !isRotatingRight) //only runs once to move
         {
             paddleAudioSource.Play();
             // make the player paddle forward right
@@ -142,20 +155,20 @@ public class MyPlayerController : MonoBehaviour
             this.GetComponent<Rigidbody>().AddRelativeForce(new Vector3(-boatSpeed, 0, boatSpeed));
 
             //this.GetComponent<Transform>().Rotate(0, boatRotation, 0);
-            StartCoroutine(RotateBoatRight());
+            //StartCoroutine(RotateBoatRight());
+            isRotatingRight = true;
 
             if (rb.velocity.magnitude > topSpeed)
                 rb.velocity = rb.velocity.normalized * topSpeed;
 
             //particle sploosh
             //GameObject.Instantiate(particles, (this.transform.position + new Vector3(-10.0f, 1.0f, 10.0f)), Quaternion.identity);
-
+            Debug.Log("paddleFRight");
             paddleFRight = false;
         }
 
-
         
-        if (paddleBLeft && !isCoroutineRunning)
+        if (paddleBLeft && !isCoroutineRunning && !isRotatingLeft && !isRotatingRight) //only runs once to move
         {
             paddleAudioSource.Play();
             // make the player paddle backward left
@@ -167,7 +180,8 @@ public class MyPlayerController : MonoBehaviour
             this.GetComponent<Rigidbody>().AddRelativeForce(new Vector3(boatSpeed, 0, -boatSpeed));
 
             //this.GetComponent<Transform>().Rotate(0, boatRotation, 0);
-            StartCoroutine(RotateBoatRight());
+            //StartCoroutine(RotateBoatRight());
+            isRotatingRight = true;
 
             if (rb.velocity.magnitude > topSpeed)
                 rb.velocity = rb.velocity.normalized * topSpeed;
@@ -175,10 +189,11 @@ public class MyPlayerController : MonoBehaviour
             //particle sploosh
             //GameObject.Instantiate(particles, (this.transform.position + new Vector3(10.0f, 1.0f, -10.0f)), Quaternion.identity);
 
+            Debug.Log("paddleBLeft");
             paddleBLeft = false;
         }
 
-        if(paddleBRight && !isCoroutineRunning)
+        if (paddleBRight && !isCoroutineRunning && !isRotatingLeft && !isRotatingRight) //only runs once to move
         {
             paddleAudioSource.Play();
             // make the player paddle backward right
@@ -190,16 +205,28 @@ public class MyPlayerController : MonoBehaviour
             this.GetComponent<Rigidbody>().AddRelativeForce(new Vector3(boatSpeed, 0, boatSpeed));
 
             //this.GetComponent<Transform>().Rotate(0, -boatRotation, 0);
-            StartCoroutine(RotateBoatLeft());
+            //StartCoroutine(RotateBoatLeft());
+            isRotatingLeft = true;
 
             if (rb.velocity.magnitude > topSpeed)
                 rb.velocity = rb.velocity.normalized * topSpeed;
 
             //particle sploosh
             //GameObject.Instantiate(particles, (this.transform.position + new Vector3(10.0f, 1.0f, 10.0f)), Quaternion.identity);
-
+            Debug.Log("paddleBRight");
             paddleBRight = false;
         }
+
+        if(isRotatingRight)
+        {
+            RotateBoatRight2();
+        }
+
+        if (isRotatingLeft)
+        {
+            RotateBoatLeft2();
+        }
+
         //------------------------
         debugText.text = "\nSpeed: " + gameObject.GetComponent<Rigidbody>().velocity;
     }
@@ -238,5 +265,77 @@ public class MyPlayerController : MonoBehaviour
         rotationCounter = 0f;
         yield return new WaitForSecondsRealtime(0.2f);
         isCoroutineRunning = false;
+    }
+
+    void RotateBoatLeft2()
+    {
+        Debug.Log("RotateBoatLeft2");
+        paddleBRight = true; //these prevent the player from adding additional movements to a "movement queue" when pressing a movement key while the player is currently still rotating  
+        paddleFLeft = true;
+        paddleBLeft = true;
+        paddleFRight = true;
+
+        //While the elapsed time is less than the duration
+        if (rotationCounter < rotationDuration)
+        {
+            //Increase the counter by delta time
+            rotationCounter += Time.deltaTime; //Time.deltaTime // 0.0015f
+            Debug.Log("rotCounter: " + rotationCounter);
+            //Apply the rotation to the object
+            transform.rotation = transform.rotation * endLeftRotation;
+            return;
+        }
+        
+        /*
+        //wait 0.2f until continuing        
+        float waitingCounter = 0f;
+        if (waitingCounter < rotationEndThreshold)
+        {
+            waitingCounter += Time.deltaTime;
+            return;
+        }*/
+
+        rotationCounter = 0f;
+        paddleBRight = false;
+        paddleFLeft = false;
+        paddleBLeft = false;
+        paddleFRight = false;
+        isRotatingLeft = false;
+    }
+
+    void RotateBoatRight2()
+    {
+        Debug.Log("RotateBoatRight2");
+        paddleBLeft = true;
+        paddleFRight = true;
+        paddleBRight = true;
+        paddleFLeft = true;
+
+        //While the elapsed time is less than the duration
+        if (rotationCounter < rotationDuration)
+        {
+            //Increase the counter by delta time
+            rotationCounter += Time.deltaTime; //Time.deltaTime // 0.0015f
+            Debug.Log("rotCounter: "+rotationCounter);
+            //Apply the rotation to the object
+            transform.rotation = transform.rotation * endRightRotation;
+            return;
+        }
+        
+        /*
+        //wait 0.2f until continuing           
+        float waitingCounter = 0f;
+        if (waitingCounter < rotationEndThreshold)
+        {
+            waitingCounter += Time.deltaTime;
+            return;
+        }*/
+
+        rotationCounter = 0f;
+        paddleBLeft = false;
+        paddleFRight = false;
+        paddleBRight = false;
+        paddleFLeft = false;
+        isRotatingRight = false;
     }
 }
